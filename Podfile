@@ -7,5 +7,6 @@ target 'MovieNews' do
 
   # Pods for MovieNews
   pod 'AFNetworking', '~> 3.0'
+  pod 'ARSLineProgress', '~> 2.0'
 
 end

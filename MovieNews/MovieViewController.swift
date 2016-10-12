@@ -8,10 +8,12 @@
 
 import UIKit
 import AFNetworking
+import ARSLineProgress
 
 class MovieViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
 
     @IBOutlet weak var movieTable: UITableView!
+    @IBOutlet weak var networkNoti: UILabel!
     
     let baseURL  = "http://image.tmdb.org/t/p/w342"
     var movies = [NSDictionary]()
@@ -22,7 +24,11 @@ class MovieViewController: UIViewController, UITableViewDataSource, UITableViewD
         movieTable.dataSource = self
         movieTable.delegate = self
         
-        loadMovies()
+        loadMovies(hasLoadingHud: true)
+        
+        let refreshControl = UIRefreshControl()
+        refreshControl.addTarget(self, action: #selector(loadMovies(refreshControl:hasLoadingHud:)), for: UIControlEvents.valueChanged)
+        movieTable.insertSubview(refreshControl, at: 0)
     }
 
     override func didReceiveMemoryWarning() {
@@ -51,33 +57,6 @@ class MovieViewController: UIViewController, UITableViewDataSource, UITableViewD
         
         return cell
     }
-    
-    func loadMovies() {
-        let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
-        let url = URL(string: "https://api.themoviedb.org/3/movie/now_playing?api_key=\(apiKey)")
-        let request = URLRequest(
-            url: url!,
-            cachePolicy: NSURLRequest.CachePolicy.reloadIgnoringLocalCacheData,
-            timeoutInterval: 10)
-        let session = URLSession(
-            configuration: URLSessionConfiguration.default,
-            delegate: nil,
-            delegateQueue: OperationQueue.main
-        )
-        let task: URLSessionDataTask =
-            session.dataTask(with: request,
-                             completionHandler: { (dataOrNil, response, error) in
-                                if let data = dataOrNil {
-                                    if let responseDictionary = try! JSONSerialization.jsonObject(
-                                        with: data, options:[]) as? NSDictionary {
-//                                        print("response: \(responseDictionary)")
-                                        self.movies = responseDictionary["results"] as! [NSDictionary]
-                                        self.movieTable.reloadData()
-                                    }
-                                }
-            })
-        task.resume()
-    }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         let detailVC = segue.destination as! DetailViewController
@@ -103,6 +82,56 @@ class MovieViewController: UIViewController, UITableViewDataSource, UITableViewD
         let imgView = UIImageView()
         imgView.setImageWith(URL(string: posterURL)!)
         detailVC.postImg = imgView.image
+    }
+    
+    func loadMovies(refreshControl: UIRefreshControl? = nil, hasLoadingHud: Bool) {
+        let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
+        let url = URL(string: "https://api.themoviedb.org/3/movie/now_playing?api_key=\(apiKey)")
+        let request = URLRequest(
+            url: url!,
+            cachePolicy: NSURLRequest.CachePolicy.reloadIgnoringLocalCacheData,
+            timeoutInterval: 10)
+        let session = URLSession(
+            configuration: URLSessionConfiguration.default,
+            delegate: nil,
+            delegateQueue: OperationQueue.main
+        )
+        
+        // display loading HUD
+        if hasLoadingHud {
+            ARSLineProgress.show()
+        }
+        
+        let task: URLSessionDataTask =
+            session.dataTask(with: request,
+                             completionHandler: { (dataOrNil, response, error) in
+                                if let data = dataOrNil {
+                                    if let responseDictionary = try! JSONSerialization.jsonObject(
+                                        with: data, options:[]) as? NSDictionary {
+                                        self.movies = responseDictionary["results"] as! [NSDictionary]
+                                        self.movieTable.reloadData()
+                                        
+                                        // display success loaded HUD
+                                        if hasLoadingHud {
+                                            ARSLineProgressConfiguration.checkmarkAnimationDrawDuration = 0.2
+                                            ARSLineProgressConfiguration.successCircleAnimationDrawDuration = 0.2
+                                            ARSLineProgress.showSuccess()
+                                        }
+                                        // turn of network error noti
+                                        self.networkNoti.isHidden = true
+                                        // end refresh spining
+                                        refreshControl?.endRefreshing()
+                                        
+                                    }
+                                } else {
+                                    // display fail loaded HUD
+                                    if hasLoadingHud {
+                                        ARSLineProgress.showFail()
+                                    }
+                                    self.networkNoti.isHidden = false
+                                }
+            })
+        task.resume()
     }
 
 }

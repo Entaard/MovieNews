@@ -14,13 +14,16 @@ PODS:
   - AFNetworking/Serialization (3.1.0)
   - AFNetworking/UIKit (3.1.0):
     - AFNetworking/NSURLSession
+  - ARSLineProgress (2.0.0)
 
 DEPENDENCIES:
   - AFNetworking (~> 3.0)
+  - ARSLineProgress (~> 2.0)
 
 SPEC CHECKSUMS:
   AFNetworking: 5e0e199f73d8626b11e79750991f5d173d1f8b67
+  ARSLineProgress: a20f4093d44802184cbc135bcd56259d6f12d002
 
-PODFILE CHECKSUM: 40889dfe5dedabe7baf893a72375796a3d99f650
+PODFILE CHECKSUM: c1dd1f4bfa617a13aef2d857ccc8d49c11255ec1
 
 COCOAPODS: 1.1.0.rc.2
