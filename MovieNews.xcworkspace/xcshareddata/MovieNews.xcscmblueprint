@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "972E95D83DAFF0FB66528AE1978F8BE3C2F64593",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "88C5D1AB1006A69E09841E46D3095A6E207E3C57" : 9223372036854775807,
+    "972E95D83DAFF0FB66528AE1978F8BE3C2F64593" : 9223372036854775807
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "D43435A9-B1BD-4022-9897-88C511857729",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "88C5D1AB1006A69E09841E46D3095A6E207E3C57" : "..\/..",
+    "972E95D83DAFF0FB66528AE1978F8BE3C2F64593" : "MovieNews\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "MovieNews",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "MovieNews.xcworkspace",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "github.com:nongdenchet\/ios_swift_sample.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "88C5D1AB1006A69E09841E46D3095A6E207E3C57"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/Entaard\/MovieNews.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "972E95D83DAFF0FB66528AE1978F8BE3C2F64593"
+    }
+  ]
+}

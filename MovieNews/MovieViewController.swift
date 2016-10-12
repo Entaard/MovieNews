@@ -82,7 +82,27 @@ class MovieViewController: UIViewController, UITableViewDataSource, UITableViewD
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         let detailVC = segue.destination as! DetailViewController
         let indexPath = movieTable.indexPathForSelectedRow
-        detailVC.descriptionStr = movies[(indexPath?.row)!]["overview"] as? String
+        let rowPos: Int = (indexPath?.row)!
+        
+        // title
+        detailVC.movieTitle = movies[rowPos]["title"] as? String
+        // release date
+        detailVC.releaseDate = movies[rowPos]["release_date"] as? String
+        // vote average
+        detailVC.voteAvg = movies[rowPos]["vote_average"] as? Float
+        // vote count
+        detailVC.voteCount = movies[rowPos]["vote_count"] as? Float
+        // description
+        detailVC.movieDescription = movies[rowPos]["overview"] as? String
+        // img
+        guard let posterPath = movies[rowPos]["poster_path"] as? String else {
+            detailVC.postImg = nil
+            return
+        }
+        let posterURL = baseURL + posterPath
+        let imgView = UIImageView()
+        imgView.setImageWith(URL(string: posterURL)!)
+        detailVC.postImg = imgView.image
     }
 
 }
