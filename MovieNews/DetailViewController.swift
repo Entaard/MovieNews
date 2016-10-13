@@ -24,10 +24,11 @@ class DetailViewController: UIViewController {
     var voteCount: Float!
     var movieDescription: String!
     var postImg: UIImage!
-    var bottomPos: CGRect!
-    var movieViewX: CGFloat!
-    var movieViewShortY: CGFloat!
-    var movieViewFullY: CGFloat!
+    
+    private var bottomPos: CGRect!
+    private var movieViewX: CGFloat!
+    private var movieViewShortY: CGFloat!
+    private var movieViewFullY: CGFloat!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -76,12 +77,12 @@ class DetailViewController: UIViewController {
     func initMovieScrollViewPos() {
         movieViewX = movieScrollView.frame.origin.x
         movieViewShortY = movieScrollView.frame.origin.y
-        movieViewFullY = movieViewShortY - movieScrollView.frame.height + movieTitleLabel.frame.height
+        movieViewFullY = movieViewShortY - movieScrollView.bounds.height + movieTitleLabel.bounds.height
     }
     
     func animateMovieScrollView() {
-        let height = movieScrollView.frame.height
-        let width = movieScrollView.frame.width
+        let height = movieScrollView.bounds.height
+        let width = movieScrollView.bounds.width
         
         let currentY = self.movieScrollView.frame.origin.y
         if currentY == self.movieViewShortY {

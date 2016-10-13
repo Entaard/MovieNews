@@ -12,10 +12,32 @@ import UIKit
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
-
+    let newWidth = CGFloat(30)
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        
+        // Find Main.storyboard
+        let mainStoryboard = UIStoryboard(name: "Main", bundle: nil)
+        
+        // init navigation controller and its subview (the MovieViewController)
+        let nowPlayingController = mainStoryboard.instantiateViewController(withIdentifier: "NavMovieViewController")
+        nowPlayingController.tabBarItem.title = "Now Playing"
+        nowPlayingController.tabBarItem.image = resizeImage(image: UIImage(named: "now-playing")!, newWidth: newWidth)
+
+        // init top rating view controller
+        let topRatingController = mainStoryboard.instantiateViewController(withIdentifier: "NavTopRatedViewController")
+        topRatingController.tabBarItem.title = "Top Rated"
+        topRatingController.tabBarItem.image = resizeImage(image: UIImage(named: "top-rated")!, newWidth: newWidth)
+        
+        // Set up the Tab Bar Controller to have two tabs
+        let tabBarController = UITabBarController()
+        tabBarController.viewControllers = [nowPlayingController, topRatingController]
+        
+        // Make the Tab Bar Controller the root view controller
+        window?.rootViewController = tabBarController
+        window?.makeKeyAndVisible()
+        
         return true
     }
 
@@ -41,6 +63,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
     }
 
-
+    private func resizeImage(image: UIImage, newWidth: CGFloat) -> UIImage {
+        let scale = newWidth / image.size.width
+        let newHeight = image.size.height * scale
+        UIGraphicsBeginImageContext(CGSize(width: newWidth, height: newHeight))
+        image.draw(in: CGRect(x: 0, y: 0, width: newWidth, height: newHeight))
+        let newImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return newImage!
+    }
 }
 

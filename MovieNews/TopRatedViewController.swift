@@ -1,8 +1,8 @@
 //
-//  MovieViewController.swift
+//  TopRatedViewController.swift
 //  MovieNews
 //
-//  Created by Enta'ard on 10/11/16.
+//  Created by Enta'ard on 10/13/16.
 //  Copyright © 2016 Enta'ard. All rights reserved.
 //
 
@@ -10,25 +10,25 @@ import UIKit
 import AFNetworking
 import ARSLineProgress
 
-class MovieViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+class TopRatedViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
 
-    @IBOutlet weak var movieTable: UITableView!
+    @IBOutlet weak var topRatedTableView: UITableView!
     @IBOutlet weak var networkNoti: UILabel!
     
     let imgAPI  = "http://image.tmdb.org/t/p/w342"
-    var movies = [NSDictionary]()
+    var topRatedMovies = [NSDictionary]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        movieTable.dataSource = self
-        movieTable.delegate = self
+        topRatedTableView.dataSource = self
+        topRatedTableView.delegate = self
         
         loadMovies(hasLoadingHud: true)
         
         let refreshControl = UIRefreshControl()
         refreshControl.addTarget(self, action: #selector(loadMovies(refreshControl:hasLoadingHud:)), for: UIControlEvents.valueChanged)
-        movieTable.insertSubview(refreshControl, at: 0)
+        topRatedTableView.insertSubview(refreshControl, at: 0)
     }
 
     override func didReceiveMemoryWarning() {
@@ -37,54 +37,61 @@ class MovieViewController: UIViewController, UITableViewDataSource, UITableViewD
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return movies.count
+        return 1
+    }
+    
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return topRatedMovies.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = movieTable.dequeueReusableCell(withIdentifier: "movieCell") as! MovieCell
+        let cell = topRatedTableView.dequeueReusableCell(withIdentifier: "TopRatedCell") as! TopRatedCell
         
-        // title
-        cell.titleLabel?.text = movies[indexPath.row]["title"] as? String
-        // overview (description)
-        cell.descriptionLabel?.text = movies[indexPath.row]["overview"] as? String
         // img
-        loadPosterImg(movie: movies[indexPath.row], atCell: cell)
+        loadPosterImg(movie: topRatedMovies[indexPath.section], atCell: cell)
+        // title
+        cell.titleLabel.text = topRatedMovies[indexPath.section]["title"] as? String
+        // voting
+        let rating = topRatedMovies[indexPath.section]["vote_average"] as? Float
+        cell.ratingLabel.text = String.init(format: "%.2f", rating ?? 0)
+        // voting count
+        let ratingCount = topRatedMovies[indexPath.section]["vote_count"] as? Float
+        cell.ratingCountLabel.text = String.init(format: "%.0f", ratingCount ?? 0)
         
         return cell
     }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        let detailVC = segue.destination as! DetailViewController
-        let indexPath = movieTable.indexPathForSelectedRow
-        let rowPos: Int = (indexPath?.row)!
+        // Get the new view controller using segue.destinationViewController.
+        // Pass the selected object to the new view controller.
+        let detailViewController = segue.destination as! DetailViewController
+        let rowPos = topRatedTableView.indexPathForSelectedRow!.section
         
         // title
-        detailVC.movieTitle = movies[rowPos]["title"] as? String
+        detailViewController.movieTitle = topRatedMovies[rowPos]["title"] as? String
         // release date
-        detailVC.releaseDate = movies[rowPos]["release_date"] as? String
+        detailViewController.releaseDate = topRatedMovies[rowPos]["release_date"] as? String
         // vote average
-        detailVC.voteAvg = movies[rowPos]["vote_average"] as? Float
+        detailViewController.voteAvg = topRatedMovies[rowPos]["vote_average"] as? Float
         // vote count
-        detailVC.voteCount = movies[rowPos]["vote_count"] as? Float
+        detailViewController.voteCount = topRatedMovies[rowPos]["vote_count"] as? Float
         // description
-        detailVC.movieDescription = movies[rowPos]["overview"] as? String
+        detailViewController.movieDescription = topRatedMovies[rowPos]["overview"] as? String
         // img
-        if let posterPath = movies[rowPos]["poster_path"] as? String {
+        if let posterPath = topRatedMovies[rowPos]["poster_path"] as? String {
             let posterURL = imgAPI + posterPath
             let imgView = UIImageView()
             imgView.setImageWith(URL(string: posterURL)!)
-            detailVC.postImg = imgView.image
+            detailViewController.postImg = imgView.image
         } else {
-            detailVC.postImg = nil
-            return
+            detailViewController.postImg = nil
         }
-        
-        detailVC.hidesBottomBarWhenPushed = true
+        detailViewController.hidesBottomBarWhenPushed = true
     }
     
     func loadMovies(refreshControl: UIRefreshControl? = nil, hasLoadingHud: Bool) {
         let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
-        let url = URL(string: "https://api.themoviedb.org/3/movie/now_playing?api_key=\(apiKey)")
+        let url = URL(string: "https://api.themoviedb.org/3/movie/top_rated?api_key=\(apiKey)")
         let request = URLRequest(
             url: url!,
             cachePolicy: NSURLRequest.CachePolicy.reloadIgnoringLocalCacheData,
@@ -106,8 +113,8 @@ class MovieViewController: UIViewController, UITableViewDataSource, UITableViewD
                                 if let data = dataOrNil {
                                     if let responseDictionary = try! JSONSerialization.jsonObject(
                                         with: data, options:[]) as? NSDictionary {
-                                        self.movies = responseDictionary["results"] as! [NSDictionary]
-                                        self.movieTable.reloadData()
+                                        self.topRatedMovies = responseDictionary["results"] as! [NSDictionary]
+                                        self.topRatedTableView.reloadData()
                                         
                                         // display success loaded HUD
                                         if hasLoadingHud {
@@ -132,13 +139,13 @@ class MovieViewController: UIViewController, UITableViewDataSource, UITableViewD
         task.resume()
     }
     
-    func loadPosterImg(movie: NSDictionary, atCell cell: MovieCell) {
+    private func loadPosterImg(movie: NSDictionary, atCell cell: TopRatedCell) {
         guard let imgPath = movie["poster_path"] as? String else {
-            cell.posterView.image = UIImage(named: "default-poster")
+            cell.posterImgView.image = UIImage(named: "default-poster")
             return
         }
         let posterURL = imgAPI + imgPath
-        cell.posterView.setImageWith(URL(string: posterURL)!)
+        cell.posterImgView.setImageWith(URL(string: posterURL)!)
     }
 
 }
