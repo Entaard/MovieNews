@@ -53,6 +53,8 @@ class TableViewController: UIViewController, UITableViewDelegate, UITableViewDat
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        let movieViewController = self.parent as! MovieViewController
+        movieViewController.searchBar.endEditing(true)
         let detailVC = segue.destination as! DetailViewController
         let indexPath = movieTable.indexPathForSelectedRow
         let rowPos: Int = (indexPath?.row)!

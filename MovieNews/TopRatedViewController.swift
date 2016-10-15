@@ -10,16 +10,22 @@ import UIKit
 import AFNetworking
 import ARSLineProgress
 
-class TopRatedViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+class TopRatedViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate {
+    
+    let imgAPI  = "http://image.tmdb.org/t/p/w342"
+    let searchBar = UISearchBar()
 
     @IBOutlet weak var topRatedTableView: UITableView!
     @IBOutlet weak var networkNoti: UILabel!
     
-    let imgAPI  = "http://image.tmdb.org/t/p/w342"
+    var searchResults = [NSDictionary]()
+    var movies = [NSDictionary]()
     var topRatedMovies = [NSDictionary]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        createSearchBar()
 
         topRatedTableView.dataSource = self
         topRatedTableView.delegate = self
@@ -29,6 +35,23 @@ class TopRatedViewController: UIViewController, UITableViewDelegate, UITableView
         let refreshControl = UIRefreshControl()
         refreshControl.addTarget(self, action: #selector(loadMovies(refreshControl:hasLoadingHud:)), for: UIControlEvents.valueChanged)
         topRatedTableView.insertSubview(refreshControl, at: 0)
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        searchBar.showsCancelButton = true
+        searchMovies(withSearchTerm: searchText)
+    }
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+//        let searchTerm = searchBar.text ?? ""
+//        searchMovies(withSearchTerm: searchTerm)
+        searchBar.endEditing(true)
+    }
+    
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.showsCancelButton = false
+        searchBar.endEditing(true)
+        searchMovies(withSearchTerm: "")
     }
 
     override func didReceiveMemoryWarning() {
@@ -41,44 +64,45 @@ class TopRatedViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return topRatedMovies.count
+        return movies.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = topRatedTableView.dequeueReusableCell(withIdentifier: "TopRatedCell") as! TopRatedCell
         
         // img
-        loadPosterImg(movie: topRatedMovies[indexPath.section], atCell: cell)
+        loadPosterImg(movie: movies[indexPath.section], atCell: cell)
         // title
-        cell.titleLabel.text = topRatedMovies[indexPath.section]["title"] as? String
+        cell.titleLabel.text = movies[indexPath.section]["title"] as? String
         // voting
-        let rating = topRatedMovies[indexPath.section]["vote_average"] as? Float
+        let rating = movies[indexPath.section]["vote_average"] as? Float
         cell.ratingLabel.text = String.init(format: "%.2f", rating ?? 0)
         // voting count
-        let ratingCount = topRatedMovies[indexPath.section]["vote_count"] as? Float
+        let ratingCount = movies[indexPath.section]["vote_count"] as? Float
         cell.ratingCountLabel.text = String.init(format: "%.0f", ratingCount ?? 0)
         
         return cell
     }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        searchBar.endEditing(true)
         // Get the new view controller using segue.destinationViewController.
         // Pass the selected object to the new view controller.
         let detailViewController = segue.destination as! DetailViewController
         let rowPos = topRatedTableView.indexPathForSelectedRow!.section
         
         // title
-        detailViewController.movieTitle = topRatedMovies[rowPos]["title"] as? String
+        detailViewController.movieTitle = movies[rowPos]["title"] as? String
         // release date
-        detailViewController.releaseDate = topRatedMovies[rowPos]["release_date"] as? String
+        detailViewController.releaseDate = movies[rowPos]["release_date"] as? String
         // vote average
-        detailViewController.voteAvg = topRatedMovies[rowPos]["vote_average"] as? Float
+        detailViewController.voteAvg = movies[rowPos]["vote_average"] as? Float
         // vote count
-        detailViewController.voteCount = topRatedMovies[rowPos]["vote_count"] as? Float
+        detailViewController.voteCount = movies[rowPos]["vote_count"] as? Float
         // description
-        detailViewController.movieDescription = topRatedMovies[rowPos]["overview"] as? String
+        detailViewController.movieDescription = movies[rowPos]["overview"] as? String
         // img
-        if let posterPath = topRatedMovies[rowPos]["poster_path"] as? String {
+        if let posterPath = movies[rowPos]["poster_path"] as? String {
             let posterURL = imgAPI + posterPath
             let imgView = UIImageView()
             imgView.setImageWith(URL(string: posterURL)!)
@@ -113,8 +137,9 @@ class TopRatedViewController: UIViewController, UITableViewDelegate, UITableView
                                 if let data = dataOrNil {
                                     if let responseDictionary = try! JSONSerialization.jsonObject(
                                         with: data, options:[]) as? NSDictionary {
-                                        self.topRatedMovies = responseDictionary["results"] as! [NSDictionary]
+                                        self.movies = responseDictionary["results"] as! [NSDictionary]
                                         self.topRatedTableView.reloadData()
+                                        self.topRatedMovies = self.movies
                                         
                                         // display success loaded HUD
                                         if hasLoadingHud {
@@ -146,6 +171,32 @@ class TopRatedViewController: UIViewController, UITableViewDelegate, UITableView
         }
         let posterURL = imgAPI + imgPath
         cell.posterImgView.setImageWith(URL(string: posterURL)!)
+    }
+    
+    func createSearchBar() {
+        searchBar.showsCancelButton = false
+        searchBar.placeholder = "Enter movie title here..."
+        searchBar.delegate = self
+        self.navigationItem.titleView = searchBar
+    }
+    
+    func searchMovies(withSearchTerm searchTerm: String) {
+        let searchText = searchTerm.trimmingCharacters(in: NSCharacterSet.whitespaces)
+        
+        if searchText == "" {
+            movies = topRatedMovies
+            topRatedTableView.reloadData()
+        } else {
+            searchResults = [NSDictionary]()
+            for movie in topRatedMovies {
+                let title = movie["title"] as! String
+                if (title.lowercased().range(of: searchText.lowercased()) != nil) {
+                    searchResults.append(movie)
+                }
+            }
+            movies = searchResults
+            topRatedTableView.reloadData()
+        }
     }
 
 }

@@ -47,6 +47,9 @@ class GridViewController: UIViewController, UICollectionViewDelegate, UICollecti
     }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        let movieViewController = self.parent as! MovieViewController
+        movieViewController.searchBar.endEditing(true)
+        
         let detailVC = segue.destination as! DetailViewController
         let indexPath = movieGrid.indexPathsForSelectedItems?[0]
         let rowPos: Int = (indexPath?.row)!
