@@ -7,28 +7,22 @@
 //
 
 import UIKit
-import AFNetworking
 import ARSLineProgress
 
-class MovieViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+class MovieViewController: UIViewController {
 
-    @IBOutlet weak var movieTable: UITableView!
+    @IBOutlet weak var layoutControl: UISegmentedControl!
+    @IBOutlet weak var tableContainer: UIView!
+    @IBOutlet weak var gridContainer: UIView!
     @IBOutlet weak var networkNoti: UILabel!
     
-    let imgAPI  = "http://image.tmdb.org/t/p/w342"
-    var movies = [NSDictionary]()
+//    var movies = [NSDictionary]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        movieTable.dataSource = self
-        movieTable.delegate = self
         
         loadMovies(hasLoadingHud: true)
-        
-        let refreshControl = UIRefreshControl()
-        refreshControl.addTarget(self, action: #selector(loadMovies(refreshControl:hasLoadingHud:)), for: UIControlEvents.valueChanged)
-        movieTable.insertSubview(refreshControl, at: 0)
+        chooseLayout(selectedSegmentIndex: layoutControl.selectedSegmentIndex)
     }
 
     override func didReceiveMemoryWarning() {
@@ -36,50 +30,8 @@ class MovieViewController: UIViewController, UITableViewDataSource, UITableViewD
         // Dispose of any resources that can be recreated.
     }
     
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return movies.count
-    }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = movieTable.dequeueReusableCell(withIdentifier: "movieCell") as! MovieCell
-        
-        // title
-        cell.titleLabel?.text = movies[indexPath.row]["title"] as? String
-        // overview (description)
-        cell.descriptionLabel?.text = movies[indexPath.row]["overview"] as? String
-        // img
-        loadPosterImg(movie: movies[indexPath.row], atCell: cell)
-        
-        return cell
-    }
-
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        let detailVC = segue.destination as! DetailViewController
-        let indexPath = movieTable.indexPathForSelectedRow
-        let rowPos: Int = (indexPath?.row)!
-        
-        // title
-        detailVC.movieTitle = movies[rowPos]["title"] as? String
-        // release date
-        detailVC.releaseDate = movies[rowPos]["release_date"] as? String
-        // vote average
-        detailVC.voteAvg = movies[rowPos]["vote_average"] as? Float
-        // vote count
-        detailVC.voteCount = movies[rowPos]["vote_count"] as? Float
-        // description
-        detailVC.movieDescription = movies[rowPos]["overview"] as? String
-        // img
-        if let posterPath = movies[rowPos]["poster_path"] as? String {
-            let posterURL = imgAPI + posterPath
-            let imgView = UIImageView()
-            imgView.setImageWith(URL(string: posterURL)!)
-            detailVC.postImg = imgView.image
-        } else {
-            detailVC.postImg = nil
-            return
-        }
-        
-        detailVC.hidesBottomBarWhenPushed = true
+    @IBAction func changeLayout(_ sender: AnyObject) {
+        chooseLayout(selectedSegmentIndex: layoutControl.selectedSegmentIndex)
     }
     
     func loadMovies(refreshControl: UIRefreshControl? = nil, hasLoadingHud: Bool) {
@@ -106,8 +58,16 @@ class MovieViewController: UIViewController, UITableViewDataSource, UITableViewD
                                 if let data = dataOrNil {
                                     if let responseDictionary = try! JSONSerialization.jsonObject(
                                         with: data, options:[]) as? NSDictionary {
-                                        self.movies = responseDictionary["results"] as! [NSDictionary]
-                                        self.movieTable.reloadData()
+                                        
+                                        let tableViewController = self.childViewControllers[0] as! TableViewController
+                                        tableViewController.movies = responseDictionary["results"] as! [NSDictionary]
+                                        tableViewController.movieTable.reloadData()
+                                        
+                                        let gridViewController = self.childViewControllers[1] as! GridViewController
+                                        gridViewController.movies = responseDictionary["results"] as! [NSDictionary]
+                                        gridViewController.movieGrid.reloadData()
+                                        
+                                        
                                         
                                         // display success loaded HUD
                                         if hasLoadingHud {
@@ -132,13 +92,17 @@ class MovieViewController: UIViewController, UITableViewDataSource, UITableViewD
         task.resume()
     }
     
-    func loadPosterImg(movie: NSDictionary, atCell cell: MovieCell) {
-        guard let imgPath = movie["poster_path"] as? String else {
-            cell.posterView.image = UIImage(named: "default-poster")
-            return
-        }
-        let posterURL = imgAPI + imgPath
-        cell.posterView.setImageWith(URL(string: posterURL)!)
+    func chooseLayout(selectedSegmentIndex index: Int) {
+        let animator = UIViewPropertyAnimator(duration: 0.4, curve: .easeInOut, animations: {
+            if index == 0 {
+                self.tableContainer.alpha = 1
+                self.gridContainer.alpha = 0
+            } else {
+                self.tableContainer.alpha = 0
+                self.gridContainer.alpha = 1
+            }
+        })
+        animator.startAnimation()
     }
 
 }
