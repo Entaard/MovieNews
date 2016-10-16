@@ -53,6 +53,7 @@ view. Is there anyway to set detailview's height automatically so that it is not
 
 - BUG!!! Image cache problem while searching :( 
 <img src='http://i.imgur.com/SX8VwJN.gif' title='Video Walkthrough' width='' alt='MovieNews' />
+link: http://i.imgur.com/SX8VwJN.gif (please see till the end part of the gif)
 
 ## License
 
