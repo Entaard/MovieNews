@@ -12,7 +12,8 @@ import ARSLineProgress
 
 class TopRatedViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate {
     
-    let imgAPI  = "http://image.tmdb.org/t/p/w342"
+    let lowResImgAPI  = "https://image.tmdb.org/t/p/w45"
+    let highResImgAPI = "https://image.tmdb.org/t/p/original"
     let searchBar = UISearchBar()
 
     @IBOutlet weak var topRatedTableView: UITableView!
@@ -89,7 +90,8 @@ class TopRatedViewController: UIViewController, UITableViewDelegate, UITableView
         // Get the new view controller using segue.destinationViewController.
         // Pass the selected object to the new view controller.
         let detailViewController = segue.destination as! DetailViewController
-        let rowPos = topRatedTableView.indexPathForSelectedRow!.section
+        let indexPath = topRatedTableView.indexPathForSelectedRow!
+        let rowPos = indexPath.section
         
         // title
         detailViewController.movieTitle = movies[rowPos]["title"] as? String
@@ -102,14 +104,8 @@ class TopRatedViewController: UIViewController, UITableViewDelegate, UITableView
         // description
         detailViewController.movieDescription = movies[rowPos]["overview"] as? String
         // img
-        if let posterPath = movies[rowPos]["poster_path"] as? String {
-            let posterURL = imgAPI + posterPath
-            let imgView = UIImageView()
-            imgView.setImageWith(URL(string: posterURL)!)
-            detailViewController.postImg = imgView.image
-        } else {
-            detailViewController.postImg = nil
-        }
+        let currentCell = topRatedTableView.cellForRow(at: indexPath) as! TopRatedCell
+        detailViewController.postImg = currentCell.posterImgView.image
         detailViewController.hidesBottomBarWhenPushed = true
     }
     
@@ -169,8 +165,39 @@ class TopRatedViewController: UIViewController, UITableViewDelegate, UITableView
             cell.posterImgView.image = UIImage(named: "default-poster")
             return
         }
-        let posterURL = imgAPI + imgPath
-        cell.posterImgView.setImageWith(URL(string: posterURL)!)
+        let lowResURL = lowResImgAPI + imgPath
+        let highResURL = highResImgAPI + imgPath
+        let lowResRequest = URLRequest(url: URL(string: lowResURL)!)
+        let highResRequest = URLRequest(url: URL(string: highResURL)!)
+        
+        cell.posterImgView.setImageWith(
+            lowResRequest,
+            placeholderImage: nil,
+            success: { (imgRequest, imgResponse, img) in
+                if imgResponse != nil {
+                    cell.posterImgView.alpha = 0
+                    cell.posterImgView.image = img
+                    let animator = UIViewPropertyAnimator(duration: 0.5, curve: .easeInOut, animations: { 
+                        cell.posterImgView.alpha = 1
+                    })
+                    animator.startAnimation()
+                    animator.addCompletion({ (success) in
+                        cell.posterImgView.setImageWith(
+                            highResRequest,
+                            placeholderImage: nil,
+                            success: { (imgRequest, imgResponse, img) in
+                                cell.posterImgView.image = img
+                            },
+                            failure: { (imgRequest, imgResponse, error) in
+                                return
+                        })
+                    })
+                } else {
+                    cell.posterImgView.setImageWith(URL(string: highResURL)!)
+                }
+            }) { (imgRequest, imgResponse, error) in
+                cell.posterImgView.image = UIImage(named: "default-poster")
+        }
     }
     
     func createSearchBar() {

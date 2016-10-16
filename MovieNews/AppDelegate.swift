@@ -33,6 +33,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Set up the Tab Bar Controller to have two tabs
         let tabBarController = UITabBarController()
         tabBarController.viewControllers = [nowPlayingController, topRatingController]
+        tabBarController.tabBar.tintColor = UIColor(colorLiteralRed: 255, green: 0, blue: 255, alpha: 1)
         
         // Make the Tab Bar Controller the root view controller
         window?.rootViewController = tabBarController

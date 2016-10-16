@@ -11,7 +11,8 @@ import AFNetworking
 
 class GridViewController: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource {
 
-    let imgAPI  = "http://image.tmdb.org/t/p/w342"
+    let lowResImgAPI  = "https://image.tmdb.org/t/p/w45"
+    let highResImgAPI = "https://image.tmdb.org/t/p/original"
     
     @IBOutlet weak var movieGrid: UICollectionView!
     
@@ -65,15 +66,8 @@ class GridViewController: UIViewController, UICollectionViewDelegate, UICollecti
         // description
         detailVC.movieDescription = movies[rowPos]["overview"] as? String
         // img
-        if let posterPath = movies[rowPos]["poster_path"] as? String {
-            let posterURL = imgAPI + posterPath
-            let imgView = UIImageView()
-            imgView.setImageWith(URL(string: posterURL)!)
-            detailVC.postImg = imgView.image
-        } else {
-            detailVC.postImg = nil
-            return
-        }
+        let currentCell = movieGrid.cellForItem(at: indexPath!) as! MovieGridCell
+        detailVC.postImg = currentCell.posterView.image
         
         detailVC.hidesBottomBarWhenPushed = true
     }
@@ -83,8 +77,41 @@ class GridViewController: UIViewController, UICollectionViewDelegate, UICollecti
             cell.posterView.image = UIImage(named: "default-poster")
             return
         }
-        let posterURL = imgAPI + imgPath
-        cell.posterView.setImageWith(URL(string: posterURL)!)
+        let lowResURL = lowResImgAPI + imgPath
+        let highResURL = highResImgAPI + imgPath
+        let lowResRequest = URLRequest(url: URL(string: lowResURL)!)
+        let highResRequest = URLRequest(url: URL(string: highResURL)!)
+        
+        cell.posterView.setImageWith(
+            lowResRequest,
+            placeholderImage: nil,
+            success: { (imgRequest, imgResponse, img) in
+                if imgResponse != nil {
+                    cell.posterView.alpha = 0
+                    cell.posterView.image = img
+                    let animator = UIViewPropertyAnimator(duration: 0.5, curve: .easeInOut, animations: {
+                        cell.posterView.alpha = 1
+                    })
+                    animator.startAnimation()
+                    
+                    animator.addCompletion({ (success) in
+                        cell.posterView.setImageWith(
+                            highResRequest,
+                            placeholderImage: nil,
+                            success: { (imgRequest, imgResponse, img) in
+                                cell.posterView.image = img
+                            },
+                            failure: { (imgRequest, imgResponse, error) in
+                                return
+                        })
+                    })
+                } else {
+                    cell.posterView.setImageWith(URL(string: highResURL)!)
+                }
+            },
+            failure: { (imgRequest, imgResponse, error) in
+                cell.posterView.image = UIImage(named: "default-poster")
+        })
     }
-
+    
 }
