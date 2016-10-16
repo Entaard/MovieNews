@@ -51,6 +51,9 @@ view. Is there anyway to set detailview's height automatically so that it is not
 - I used a same data for both TableView and GridView, that results in having to update both views when I load new data 
 (althought only one view is visible at a time). Is there any other effective way to implement the switch view function?
 
+- BUG!!! Image cache problem while searching :( 
+<img src='http://i.imgur.com/SX8VwJN.gif' title='Video Walkthrough' width='' alt='MovieNews' />
+
 ## License
 
     Copyright [yyyy] [name of copyright owner]
