@@ -52,8 +52,10 @@ view. Is there anyway to set detailview's height automatically so that it is not
 (althought only one view is visible at a time). Is there any other effective way to implement the switch view function?
 
 - BUG!!! Image cache problem while searching :( 
-<img src='http://i.imgur.com/SX8VwJN.gif' title='Video Walkthrough' width='' alt='MovieNews' />
-link: http://i.imgur.com/SX8VwJN.gif (please see till the end part of the gif)
+<img src='http://i.imgur.com/SX8VwJN.gif' title='Video Walkthrough' width='' alt='MovieNews Bug' />
+
+link: http://i.imgur.com/SX8VwJN.gif (please see till the end part of the gif, 'The magnificent seven' has the poster
+img of 'The girl on train')
 
 ## License
 
